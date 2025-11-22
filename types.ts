@@ -13,6 +13,7 @@ export interface STLModel {
   dateAdded: number;
   tags: string[];
   description: string;
+  dimensions?: { x: number; y: number; z: number };
 }
 
 export enum ViewMode {

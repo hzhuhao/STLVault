@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { STLModel } from '../types';
 import Viewer3D from './Viewer3D';
-import { X, Download, Tag as TagIcon, Sparkles, Save, Edit3, Trash2 } from 'lucide-react';
+import { X, Download, Tag as TagIcon, Sparkles, Save, Edit3, Trash2, Calendar, HardDrive } from 'lucide-react';
 import { generateMetadataForFile } from '../services/geminiService';
 
 interface DetailPanelProps {
@@ -27,6 +27,12 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
       setIsEditing(false);
     }
   }, [model]);
+
+  const handleModelLoaded = useCallback((dimensions: { x: number; y: number; z: number }) => {
+    if (model && !model.dimensions) {
+      onUpdate(model.id, { dimensions });
+    }
+  }, [model, onUpdate]);
 
   if (!model) return null;
 
@@ -75,7 +81,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Viewer */}
         <div className="aspect-square bg-black rounded-lg border border-vault-700 overflow-hidden shadow-inner">
-          <Viewer3D url={model.url} />
+          <Viewer3D url={model.url} onLoaded={handleModelLoaded} />
         </div>
 
         {/* Actions */}
@@ -110,6 +116,28 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
           </div>
 
           <div className="space-y-3">
+             {/* Quick Stats Grid */}
+             <div className="grid grid-cols-2 gap-3 p-3 bg-vault-800 rounded-lg border border-vault-700/50">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>Added</span>
+                    </div>
+                    <p className="text-xs font-medium text-slate-200">
+                        {new Date(model.dateAdded).toLocaleDateString()}
+                    </p>
+                </div>
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <HardDrive className="w-3 h-3" />
+                        <span>File Size</span>
+                    </div>
+                    <p className="text-xs font-medium text-slate-200">
+                        {(model.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                </div>
+             </div>
+
              <div>
                 <span className="text-xs text-slate-500 block mb-1">Filename</span>
                 {isEditing ? (
