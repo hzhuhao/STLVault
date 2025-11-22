@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import ModelList from './components/ModelList';
 import DetailPanel from './components/DetailPanel';
 import { STLModel, Folder } from './types';
+import { generateThumbnail } from './services/thumbnailGenerator';
 
 // Mock Initial Data
 const INITIAL_FOLDERS: Folder[] = [
@@ -30,8 +31,11 @@ const App = () => {
     setFolders([...folders, newFolder]);
   };
 
-  const handleUpload = (fileList: FileList) => {
-    const newModels: STLModel[] = Array.from(fileList).map(file => ({
+  const handleUpload = async (fileList: FileList) => {
+    const files = Array.from(fileList);
+    
+    // 1. Create models immediately with placeholders
+    const newModels: STLModel[] = files.map(file => ({
       id: uuidv4(),
       name: file.name,
       folderId: currentFolderId === 'all' ? '1' : currentFolderId, // Default to first folder if in 'all'
@@ -39,9 +43,33 @@ const App = () => {
       size: file.size,
       dateAdded: Date.now(),
       tags: [],
-      description: ''
+      description: '',
+      thumbnail: undefined
     }));
+
     setModels(prev => [...prev, ...newModels]);
+
+    // 2. Generate thumbnails in the background for STLs
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const model = newModels[i];
+
+      // Only generate for STL files
+      if (file.name.toLowerCase().endsWith('.stl')) {
+        try {
+          // Use a small delay between generations if processing multiple to prevent UI freeze
+          if (i > 0) await new Promise(r => setTimeout(r, 100));
+          
+          const thumbnail = await generateThumbnail(file);
+          
+          setModels(prev => prev.map(m => 
+            m.id === model.id ? { ...m, thumbnail } : m
+          ));
+        } catch (error) {
+          console.warn(`Failed to generate thumbnail for ${file.name}`, error);
+        }
+      }
+    }
   };
 
   const handleUpdateModel = (id: string, updates: Partial<STLModel>) => {

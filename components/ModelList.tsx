@@ -175,9 +175,19 @@ const ModelList: React.FC<ModelListProps> = ({ models, onUpload, onSelectModel, 
               }`}
             >
               <div className="aspect-square bg-vault-800 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                 {/* Placeholder preview for grid */}
-                 <div className="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity bg-gradient-to-tr from-blue-900/40 to-transparent" />
-                 <FileBox className="w-12 h-12 text-slate-600 group-hover:text-blue-400 transition-colors" />
+                 {/* Thumbnail or Placeholder */}
+                 {model.thumbnail ? (
+                    <img 
+                      src={model.thumbnail} 
+                      alt={model.name} 
+                      className="w-full h-full object-contain p-2 opacity-80 group-hover:opacity-100 transition-opacity" 
+                    />
+                 ) : (
+                    <>
+                      <div className="absolute inset-0 opacity-30 group-hover:opacity-50 transition-opacity bg-gradient-to-tr from-blue-900/40 to-transparent" />
+                      <FileBox className="w-12 h-12 text-slate-600 group-hover:text-blue-400 transition-colors" />
+                    </>
+                 )}
                  
                  {/* Badges */}
                  <div className="absolute top-2 right-2 flex flex-wrap gap-1 justify-end max-w-[80%]">
@@ -195,7 +205,7 @@ const ModelList: React.FC<ModelListProps> = ({ models, onUpload, onSelectModel, 
                  
                  {/* File Type Badge */}
                  <div className="absolute bottom-2 left-2">
-                    <span className="text-[10px] bg-blue-600/80 text-white px-1.5 py-0.5 rounded uppercase font-bold">
+                    <span className="text-[10px] bg-blue-600/80 text-white px-1.5 py-0.5 rounded uppercase font-bold shadow-sm">
                       {model.name.split('.').pop()}
                     </span>
                  </div>

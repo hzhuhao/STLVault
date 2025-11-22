@@ -14,6 +14,7 @@ export interface STLModel {
   tags: string[];
   description: string;
   dimensions?: { x: number; y: number; z: number };
+  thumbnail?: string;
 }
 
 export enum ViewMode {
