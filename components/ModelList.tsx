@@ -45,17 +45,32 @@ const ModelList: React.FC<ModelListProps> = ({ models, onUpload, onSelectModel, 
     return result;
   }, [models, searchQuery, sortBy]);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Necessary to prevent default to allow drop
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Check if we are just moving to a child element within the drop zone
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
     setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onUpload(e.dataTransfer.files);
@@ -71,13 +86,14 @@ const ModelList: React.FC<ModelListProps> = ({ models, onUpload, onSelectModel, 
   return (
     <div 
       className="flex-1 p-8 h-full overflow-y-auto bg-vault-800 relative"
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       {/* Drag Overlay */}
       {isDragging && (
-        <div className="absolute inset-0 bg-blue-600/20 border-4 border-dashed border-blue-500 z-50 flex items-center justify-center backdrop-blur-sm m-4 rounded-xl">
+        <div className="absolute inset-0 bg-blue-600/20 border-4 border-dashed border-blue-500 z-50 flex items-center justify-center backdrop-blur-sm m-4 rounded-xl pointer-events-none">
           <div className="text-center">
             <CloudUpload className="w-16 h-16 text-blue-400 mx-auto mb-4 animate-bounce" />
             <h2 className="text-2xl font-bold text-white">Drop 3D files here</h2>
