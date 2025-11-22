@@ -1,8 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import { STLModel } from '../types';
 import Viewer3D from './Viewer3D';
 import { X, Download, Tag as TagIcon, Sparkles, Save, Edit, Trash2, Calendar, HardDrive } from 'lucide-react';
 import { generateMetadataForFile } from '../services/geminiService';
+import { api } from '../services/api';
 
 interface DetailPanelProps {
   model: STLModel | null;
@@ -87,7 +89,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
         {/* Actions */}
         <div className="flex gap-2">
           <a 
-            href={model.url} 
+            href={api.getDownloadUrl(model)} 
             download={model.name}
             className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-colors"
           >

@@ -1,0 +1,206 @@
+
+import { Folder, STLModel } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+
+// Set this to FALSE to use a real backend server
+const USE_MOCK_API = true;
+const API_BASE_URL = '/api';
+
+// Mock Data Store (for demonstration without a real backend)
+const getMockStore = () => {
+  const stored = localStorage.getItem('stl-vault-store');
+  if (stored) return JSON.parse(stored);
+  return {
+    folders: [
+      { id: '1', name: 'Characters' },
+      { id: '2', name: 'Vehicles' },
+      { id: '3', name: 'Terrain' },
+    ],
+    models: []
+  };
+};
+
+const saveMockStore = (data: any) => {
+  localStorage.setItem('stl-vault-store', JSON.stringify(data));
+};
+
+// --- API SERVICE ---
+
+export const api = {
+  // 1. GET Folders
+  getFolders: async (): Promise<Folder[]> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 500)); // Simulate network delay
+      return getMockStore().folders;
+    }
+    
+    const res = await fetch(`${API_BASE_URL}/folders`);
+    if (!res.ok) throw new Error('Failed to fetch folders');
+    return res.json();
+  },
+
+  // 2. CREATE Folder
+  createFolder: async (name: string): Promise<Folder> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 300));
+      const store = getMockStore();
+      const newFolder = { id: uuidv4(), name };
+      store.folders.push(newFolder);
+      saveMockStore(store);
+      return newFolder;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/folders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Failed to create folder');
+    return res.json();
+  },
+
+  // 3. UPDATE Folder (Rename)
+  updateFolder: async (id: string, name: string): Promise<Folder> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 200));
+      const store = getMockStore();
+      const index = store.folders.findIndex((f: Folder) => f.id === id);
+      if (index === -1) throw new Error('Folder not found');
+      store.folders[index].name = name;
+      saveMockStore(store);
+      return store.folders[index];
+    }
+
+    const res = await fetch(`${API_BASE_URL}/folders/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Update failed');
+    return res.json();
+  },
+
+  // 4. DELETE Folder
+  deleteFolder: async (id: string): Promise<void> => {
+    if (USE_MOCK_API) {
+       await new Promise(r => setTimeout(r, 200));
+       const store = getMockStore();
+       // Check for models in folder
+       const hasModels = store.models.some((m: STLModel) => m.folderId === id);
+       if (hasModels) throw new Error('Cannot delete non-empty folder');
+       
+       store.folders = store.folders.filter((f: Folder) => f.id !== id);
+       saveMockStore(store);
+       return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/folders/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Delete failed');
+  },
+
+  // 5. GET Models
+  getModels: async (folderId?: string): Promise<STLModel[]> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 600));
+      const allModels = getMockStore().models;
+      if (folderId && folderId !== 'all') {
+        return allModels.filter((m: STLModel) => m.folderId === folderId);
+      }
+      return allModels;
+    }
+
+    const query = folderId && folderId !== 'all' ? `?folderId=${folderId}` : '';
+    const res = await fetch(`${API_BASE_URL}/models${query}`);
+    if (!res.ok) throw new Error('Failed to fetch models');
+    return res.json();
+  },
+
+  // 6. UPLOAD Model
+  uploadModel: async (file: File, folderId: string, thumbnail?: string): Promise<STLModel> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 1500)); // Simulate upload time
+      
+      const store = getMockStore();
+      
+      // In a real app, the server returns a URL. 
+      // Here we simulate it with a blob URL (note: blobs don't persist well in localStorage, 
+      // but this works for the session).
+      const fakeUrl = URL.createObjectURL(file);
+      
+      const newModel: STLModel = {
+        id: uuidv4(),
+        name: file.name,
+        folderId: folderId === 'all' ? '1' : folderId,
+        url: fakeUrl,
+        size: file.size,
+        dateAdded: Date.now(),
+        tags: [],
+        description: '',
+        thumbnail: thumbnail
+      };
+
+      store.models.push(newModel);
+      saveMockStore(store);
+      return newModel;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folderId', folderId);
+    if (thumbnail) formData.append('thumbnail', thumbnail); // Send base64 thumbnail
+
+    const res = await fetch(`${API_BASE_URL}/models/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!res.ok) throw new Error('Upload failed');
+    return res.json();
+  },
+
+  // 7. UPDATE Model
+  updateModel: async (id: string, updates: Partial<STLModel>): Promise<STLModel> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 200));
+      const store = getMockStore();
+      const index = store.models.findIndex((m: STLModel) => m.id === id);
+      if (index === -1) throw new Error('Model not found');
+      
+      store.models[index] = { ...store.models[index], ...updates };
+      saveMockStore(store);
+      return store.models[index];
+    }
+
+    const res = await fetch(`${API_BASE_URL}/models/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Update failed');
+    return res.json();
+  },
+
+  // 8. DELETE Model
+  deleteModel: async (id: string): Promise<void> => {
+    if (USE_MOCK_API) {
+      await new Promise(r => setTimeout(r, 300));
+      const store = getMockStore();
+      store.models = store.models.filter((m: STLModel) => m.id !== id);
+      saveMockStore(store);
+      return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/models/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Delete failed');
+  },
+  
+  // 9. GET Download URL
+  // Helper to construct the full download link
+  getDownloadUrl: (model: STLModel) => {
+    if (USE_MOCK_API) return model.url;
+    // Assuming the API returns a relative path or ID-based download route
+    return `${API_BASE_URL}/models/${model.id}/download`;
+  }
+};
