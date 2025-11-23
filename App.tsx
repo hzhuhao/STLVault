@@ -84,10 +84,11 @@ const App = () => {
 
   const selectedModel = models.find(m => m.id === selectedModelId) || null;
 
-  const handleCreateFolder = async (name: string) => {
+  const handleCreateFolder = async (name: string, parentId: string | null = null) => {
     try {
-      const newFolder = await api.createFolder(name);
+      const newFolder = await api.createFolder(name, parentId);
       setFolders(prev => [...prev, newFolder]);
+      // If created under a parent, ensure parent is expanded in Sidebar (Sidebar handles its own expansion state, but good to know)
     } catch (error) {
       console.error("Failed to create folder:", error);
     }
@@ -104,8 +105,10 @@ const App = () => {
 
   const handleDeleteFolder = (id: string) => {
     const hasModels = models.some(m => m.folderId === id);
-    if (hasModels) {
-      alert("Folder must be empty to delete.");
+    const hasSubfolders = folders.some(f => f.parentId === id);
+    
+    if (hasModels || hasSubfolders) {
+      alert("Folder must be empty to delete. Please delete or move all models and subfolders first.");
       return;
     }
     setDeleteConfirmState({ isOpen: true, type: 'folder', id });

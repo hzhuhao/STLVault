@@ -24,9 +24,10 @@ const getMockStore = () => {
   // Default initial state
   return {
     folders: [
-      { id: '1', name: 'Characters' },
-      { id: '2', name: 'Vehicles' },
-      { id: '3', name: 'Terrain' },
+      { id: '1', name: 'Characters', parentId: null },
+      { id: '2', name: 'Vehicles', parentId: null },
+      { id: '3', name: 'Terrain', parentId: null },
+      { id: '4', name: 'Tanks', parentId: '2' }, // Subfolder example
     ],
     models: []
   };
@@ -56,11 +57,11 @@ export const api = {
   },
 
   // 2. CREATE Folder
-  createFolder: async (name: string): Promise<Folder> => {
+  createFolder: async (name: string, parentId: string | null = null): Promise<Folder> => {
     if (USE_MOCK_API) {
       await new Promise(r => setTimeout(r, 300));
       const store = getMockStore();
-      const newFolder = { id: uuidv4(), name };
+      const newFolder = { id: uuidv4(), name, parentId };
       store.folders.push(newFolder);
       saveMockStore(store);
       return newFolder;
@@ -69,13 +70,13 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/folders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, parentId }),
     });
     if (!res.ok) throw new Error('Failed to create folder');
     return res.json();
   },
 
-  // 3. UPDATE Folder (Rename)
+  // 3. UPDATE Folder (Rename/Move)
   updateFolder: async (id: string, name: string): Promise<Folder> => {
     if (USE_MOCK_API) {
       await new Promise(r => setTimeout(r, 200));
@@ -101,9 +102,13 @@ export const api = {
     if (USE_MOCK_API) {
        await new Promise(r => setTimeout(r, 200));
        const store = getMockStore();
+       
        // Check for models in folder
        const hasModels = store.models.some((m: STLModel) => m.folderId === id);
-       if (hasModels) throw new Error('Cannot delete non-empty folder');
+       // Check for subfolders
+       const hasSubfolders = store.folders.some((f: Folder) => f.parentId === id);
+       
+       if (hasModels || hasSubfolders) throw new Error('Folder must be empty to delete');
        
        store.folders = store.folders.filter((f: Folder) => f.id !== id);
        saveMockStore(store);
