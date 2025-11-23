@@ -1,4 +1,4 @@
-import React, { Suspense, useLayoutEffect, useState, useRef, useEffect, useMemo, ReactNode } from 'react';
+import React, { Suspense, useLayoutEffect, useState, useRef, useEffect, useMemo, ReactNode, Component } from 'react';
 import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Stage, Grid, Center, Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -17,7 +17,7 @@ interface ErrorBoundaryState {
 }
 
 // Simple error boundary for the canvas content
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };

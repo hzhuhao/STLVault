@@ -1,11 +1,12 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { CloudUpload, FileBox, Search, ArrowUpDown, CheckSquare, Square, MoreVertical, Trash2, ExternalLink, Download, Globe } from 'lucide-react';
-import { STLModel } from '../types';
+import { CloudUpload, FileBox, Search, ArrowUpDown, CheckSquare, Square, MoreVertical, Trash2, ExternalLink, Download, Globe, Folder as FolderIcon } from 'lucide-react';
+import { STLModel, Folder } from '../types';
 import { api } from '../services/api';
 
 interface ModelListProps {
   models: STLModel[];
+  folders: Folder[];
   onUpload: (files: FileList) => void;
   onImport: () => void;
   onSelectModel: (model: STLModel) => void;
@@ -17,12 +18,18 @@ interface ModelListProps {
   onToggleSelection: (id: string) => void;
   onSelectAll: () => void;
   onClearSelection: () => void;
+  
+  // Folder Interaction Props
+  onNavigateFolder: (id: string) => void;
+  onMoveToFolder: (folderId: string, modelIds: string[]) => void;
+  onUploadToFolder: (folderId: string, files: FileList) => void;
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'size-desc' | 'size-asc';
 
 const ModelList: React.FC<ModelListProps> = ({ 
   models, 
+  folders,
   onUpload, 
   onImport,
   onSelectModel, 
@@ -31,13 +38,17 @@ const ModelList: React.FC<ModelListProps> = ({
   selectedIds,
   onToggleSelection,
   onSelectAll,
-  onClearSelection
+  onClearSelection,
+  onNavigateFolder,
+  onMoveToFolder,
+  onUploadToFolder
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('date-desc');
   const [activeMenuModelId, setActiveMenuModelId] = useState<string | null>(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -74,6 +85,17 @@ const ModelList: React.FC<ModelListProps> = ({
     return result;
   }, [models, searchQuery, sortBy]);
 
+  const processedFolders = useMemo(() => {
+      let result = [...folders];
+      if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          result = result.filter(f => f.name.toLowerCase().includes(query));
+      }
+      // Always sort folders by name
+      result.sort((a, b) => a.name.localeCompare(b.name));
+      return result;
+  }, [folders, searchQuery]);
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -109,6 +131,31 @@ const ModelList: React.FC<ModelListProps> = ({
     }
   };
 
+  const handleFolderDrop = (e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolderId(null);
+
+    // 1. Files
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onUploadToFolder(folderId, e.dataTransfer.files);
+      return;
+    }
+
+    // 2. Move Models
+    try {
+      const data = e.dataTransfer.getData('application/json');
+      if (data) {
+        const { modelIds } = JSON.parse(data);
+        if (Array.isArray(modelIds) && modelIds.length > 0) {
+          onMoveToFolder(folderId, modelIds);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to process drop on folder", err);
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       onUpload(e.target.files);
@@ -121,10 +168,6 @@ const ModelList: React.FC<ModelListProps> = ({
     
     e.dataTransfer.setData('application/json', JSON.stringify({ modelIds: idsToMove }));
     e.dataTransfer.effectAllowed = 'move';
-    
-    // Optionally set a drag image (ghost)
-    // const el = e.target as HTMLElement;
-    // e.dataTransfer.setDragImage(el, 0, 0);
   };
 
   const selectionMode = selectedIds.size > 0;
@@ -224,7 +267,7 @@ const ModelList: React.FC<ModelListProps> = ({
       </div>
 
       {/* Grid */}
-      {processedModels.length === 0 ? (
+      {processedModels.length === 0 && processedFolders.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[50vh] text-slate-500 border-2 border-dashed border-vault-700 rounded-xl bg-vault-900/30">
           {searchQuery ? (
             <>
@@ -242,6 +285,41 @@ const ModelList: React.FC<ModelListProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-24">
+          
+          {/* Render Folders First */}
+          {processedFolders.map(folder => (
+              <div
+                  key={folder.id}
+                  onClick={() => onNavigateFolder(folder.id)}
+                  onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDragOverFolderId(folder.id);
+                  }}
+                  onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDragOverFolderId(null);
+                  }}
+                  onDrop={(e) => handleFolderDrop(e, folder.id)}
+                  className={`group bg-vault-900 border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-4 relative overflow-hidden
+                    ${dragOverFolderId === folder.id ? 'border-blue-400 bg-blue-900/10 ring-1 ring-blue-400' : 'border-vault-700 hover:border-vault-600 hover:bg-vault-800/50'}
+                  `}
+              >
+                  <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-500 group-hover:text-blue-400 group-hover:scale-110 transition-all shrink-0">
+                      <FolderIcon className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                      <h3 className="font-semibold text-slate-200 truncate group-hover:text-white">{folder.name}</h3>
+                      <p className="text-xs text-slate-500">Folder</p>
+                  </div>
+                  {dragOverFolderId === folder.id && (
+                      <div className="absolute inset-0 bg-blue-500/10 animate-pulse pointer-events-none" />
+                  )}
+              </div>
+          ))}
+
+          {/* Render Models */}
           {processedModels.map((model) => {
             const isSelected = selectedIds.has(model.id);
             const isMenuOpen = activeMenuModelId === model.id;

@@ -333,7 +333,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           };
           
           setExpandedIds(prev => {
-              const next = new Set(prev);
+              const next = new Set<string>(prev);
               expandPath(currentFolderId, next);
               return next;
           });

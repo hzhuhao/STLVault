@@ -77,6 +77,11 @@ const App = () => {
     ? models 
     : models.filter(m => m.folderId === currentFolderId);
 
+  // Filter subfolders based on selection
+  const filteredFolders = currentFolderId === 'all'
+    ? [] 
+    : folders.filter(f => f.parentId === currentFolderId);
+
   // Clear selection when changing folders to avoid confusion
   useEffect(() => {
      setSelectedIds(new Set());
@@ -382,6 +387,7 @@ const App = () => {
         ) : (
           <ModelList 
             models={filteredModels} 
+            folders={filteredFolders}
             onUpload={(files) => handleUpload(files)}
             onImport={handleOpenImport}
             onSelectModel={(m) => setSelectedModelId(m.id)}
@@ -392,6 +398,9 @@ const App = () => {
             onToggleSelection={handleToggleSelection}
             onSelectAll={handleSelectAll}
             onClearSelection={() => setSelectedIds(new Set())}
+            onNavigateFolder={(id) => setCurrentFolderId(id)}
+            onMoveToFolder={handleDropMove}
+            onUploadToFolder={(folderId, files) => handleUpload(files, folderId)}
           />
         )}
 
