@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Folder as FolderIcon, Plus, Box, LayoutGrid, Pencil, Trash2, Check, X, ChevronRight, ChevronDown, FolderOpen } from 'lucide-react';
 import { Folder, STLModel, StorageStats } from '../types';
 
@@ -277,6 +277,41 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [creatingSubfolderId, setCreatingSubfolderId] = useState<string | null>(null);
   const [dragTargetId, setDragTargetId] = useState<string | null>(null);
 
+  // Resize state
+  const [width, setWidth] = useState(260);
+  const [isResizing, setIsResizing] = useState(false);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
+    setIsResizing(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Limit width between 200px and 600px
+      const newWidth = Math.min(Math.max(e.clientX, 200), 600);
+      setWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    
+    // Add grabbing cursor to body during resize
+    document.body.style.cursor = 'col-resize';
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+    };
+  }, [isResizing]);
+
   // Calculate direct counts only (not recursive, matching file system behavior usually)
   const folderCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -337,18 +372,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     e.stopPropagation();
     if (dragTargetId !== folderId) {
       setDragTargetId(folderId);
-      // Optional: auto-expand on hover?
-      // For now, we keep it simple to avoid UI jumping
     }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Check if we are just moving to a child element
-    // Note: In the tree structure, this is tricky, simplified for now
-    // We rely on the next DragOver to set the new target
-    // Or clear it if leaving the sidebar area entirely (handled by container?)
   };
 
   const handleDrop = (e: React.DragEvent, folderId: string) => {
@@ -394,23 +423,24 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div 
-      className="w-64 bg-vault-900 border-r border-vault-700 flex flex-col h-full select-none"
+      className="bg-vault-900 border-r border-vault-700 flex flex-col h-full select-none relative shrink-0 group/sidebar"
+      style={{ width }}
       onDragLeave={() => setDragTargetId(null)}
     >
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20 shrink-0">
           <Box className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-xl font-bold text-white tracking-tight">STL Vault</h1>
+        <h1 className="text-xl font-bold text-white tracking-tight truncate">STL Vault</h1>
       </div>
 
       <div className="px-4 mb-4">
         <button
           onClick={() => setIsCreatingRoot(true)}
-          className="w-full flex items-center justify-center gap-2 bg-vault-800 hover:bg-vault-700 text-slate-200 py-2 px-4 rounded-md transition-colors border border-vault-700 shadow-sm"
+          className="w-full flex items-center justify-center gap-2 bg-vault-800 hover:bg-vault-700 text-slate-200 py-2 px-4 rounded-md transition-colors border border-vault-700 shadow-sm overflow-hidden"
         >
-          <Plus className="w-4 h-4" />
-          <span>New Root Folder</span>
+          <Plus className="w-4 h-4 shrink-0" />
+          <span className="truncate">New Root Folder</span>
         </button>
       </div>
 
@@ -439,8 +469,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <LayoutGrid className="w-5 h-5 shrink-0" />
-          <span className="text-sm font-medium flex-1 text-left">All Models</span>
-          <span className="text-xs text-slate-600 group-hover:text-slate-500">{models.length}</span>
+          <span className="text-sm font-medium flex-1 text-left truncate">All Models</span>
+          <span className="text-xs text-slate-600 group-hover:text-slate-500 shrink-0">{models.length}</span>
         </button>
 
         <div className="pt-2 pb-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider flex justify-between items-center">
@@ -477,7 +507,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <div className="p-4 border-t border-vault-700 bg-vault-900 z-10">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-3 shadow-lg">
-          <p className="text-xs text-white/80 font-medium mb-1">Storage Used</p>
+          <p className="text-xs text-white/80 font-medium mb-1 truncate">Storage Used</p>
           <div className="w-full bg-black/20 rounded-full h-1.5 mb-2 overflow-hidden">
             <div 
               className="bg-white h-full rounded-full transition-all duration-500 ease-out" 
@@ -490,6 +520,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Resizer Handle */}
+      <div
+        className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-500 transition-colors z-50 ${isResizing ? 'bg-blue-500' : 'bg-transparent'}`}
+        onMouseDown={startResizing}
+      />
     </div>
   );
 };
