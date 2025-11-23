@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { STLModel } from '../types';
 import Viewer3D from './Viewer3D';
-import { X, Download, Tag as TagIcon, Sparkles, Save, Edit, Trash2, Calendar, HardDrive, FileUp, RefreshCw } from 'lucide-react';
+import { X, Download, Tag as TagIcon, Sparkles, Save, Edit, Trash2, Calendar, HardDrive, FileUp, RefreshCw, AlertTriangle } from 'lucide-react';
 import { generateMetadataForFile } from '../services/geminiService';
 import { generateThumbnail } from '../services/thumbnailGenerator';
 import { api } from '../services/api';
@@ -21,6 +21,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editTags, setEditTags] = useState('');
+  const [errorState, setErrorState] = useState<{ show: boolean; message: string }>({ show: false, message: '' });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,6 +32,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
       setEditDesc(model.description || '');
       setEditTags(model.tags.join(', '));
       setIsEditing(false);
+      setErrorState({ show: false, message: '' });
     }
   }, [model]);
 
@@ -67,6 +69,24 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
   const handleReplaceFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !model) return;
+
+    // Extension check
+    const getExtension = (filename: string) => {
+        const parts = filename.split('.');
+        return parts.length > 1 ? parts.pop()?.toLowerCase() : '';
+    };
+
+    const currentExt = getExtension(model.name);
+    const newExt = getExtension(file.name);
+
+    if (currentExt && newExt && currentExt !== newExt) {
+        setErrorState({
+            show: true,
+            message: `You cannot replace a .${currentExt} file with a .${newExt} file.`
+        });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+    }
     
     setIsReplacing(true);
     try {
@@ -105,7 +125,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
   };
 
   return (
-    <div className="w-96 bg-vault-900 border-l border-vault-700 flex flex-col h-full shadow-2xl z-20">
+    <div className="w-96 bg-vault-900 border-l border-vault-700 flex flex-col h-full shadow-2xl z-20 relative">
       {/* Header */}
       <div className="p-4 border-b border-vault-700 flex justify-between items-center">
         <h3 className="font-semibold text-white">Model Details</h3>
@@ -267,6 +287,29 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ model, onClose, onUpdate, onD
                  <Trash2 className="w-4 h-4" /> Delete Model
              </button>
         </div>
+
+        {/* Error Modal Overlay */}
+        {errorState.show && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-6 animate-in fade-in duration-200">
+            <div className="bg-vault-800 border border-red-500/50 rounded-xl shadow-2xl w-full animate-in zoom-in-95 duration-200 p-5">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-red-900/30 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">File Mismatch</h3>
+                  <p className="text-sm text-slate-300 mt-2 leading-relaxed">{errorState.message}</p>
+                </div>
+                <button
+                  onClick={() => setErrorState({ show: false, message: '' })}
+                  className="w-full mt-2 py-2 bg-vault-700 hover:bg-vault-600 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Okay, got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
