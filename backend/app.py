@@ -5,6 +5,7 @@ import shutil
 import sqlite3
 from fastapi import BackgroundTasks, Depends, FastAPI, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse
+from starlette.middleware.cors import CORSMiddleware
 import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -14,7 +15,13 @@ DB_PATH = os.getenv("DB_PATH", "data.db")
 UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
 
 app = FastAPI(title="MakerVault API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins="http://192.168.178.21:8989",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 def get_db_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
