@@ -4,8 +4,8 @@ import time
 import shutil
 import sqlite3
 import json
+from pathlib import Path
 from typing import Optional, List, Dict, Any
-
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
@@ -13,6 +13,8 @@ from typing import Optional, List, Dict, Any
     allow_headers=["*"],
 )
 
+DB_PATH = os.getenv("DB_PATH", "sqlite:///./data.db")
+UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
 
 def get_db_conn():
     conn = sqlite3.connect(DB_PATH)
