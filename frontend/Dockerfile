@@ -6,4 +6,4 @@ RUN npm install
 RUN npm run build
 COPY . .
 EXPOSE 5173
-CMD ["vite"]
+CMD ["npm", "run", "dev", "--", "--host"]
