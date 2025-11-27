@@ -20,7 +20,7 @@ services:
     volumes:
       - node_modules:/app/node_modules
     ports:
-      - "8989:8081"
+      - "8989:5173"
     depends_on:
       - backend
     restart: always
