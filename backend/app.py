@@ -92,7 +92,7 @@ def row_to_model(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
-def save_upload_file(upload_file: UploadFile, dest_path: str) -> int:
+def save_upload_file(upload_file, dest_path: str) -> int:
     with open(dest_path, "wb") as buffer:
         shutil.copyfileobj(upload_file.file, buffer)
     size = os.path.getsize(dest_path)
