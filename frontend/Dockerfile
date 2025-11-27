@@ -1,6 +1,7 @@
 FROM node:18-alpine
+RUN mkdir -p /app
+COPY . /app/
 WORKDIR /app
-COPY package.json package-lock.json ./
 RUN npm install
 RUN npm run build
 COPY . .
