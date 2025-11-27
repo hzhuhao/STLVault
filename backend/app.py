@@ -3,6 +3,8 @@ import uuid
 import time
 import shutil
 import sqlite3
+from fastapi import BackgroundTasks, Depends, FastAPI, UploadFile, File, Form, HTTPException, Query
+from fastapi.responses import FileResponse
 import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -10,6 +12,8 @@ from typing import Optional, List, Dict, Any
 
 DB_PATH = os.getenv("DB_PATH", "data.db")
 UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
+
+app = FastAPI(title="MakerVault API")
 
 def get_db_conn():
     conn = sqlite3.connect(DB_PATH)
@@ -92,7 +96,7 @@ def row_to_model(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
-def save_upload_file(upload_file, dest_path: str) -> int:
+def save_upload_file(upload_file: UploadFile, dest_path: str) -> int:
     with open(dest_path, "wb") as buffer:
         shutil.copyfileobj(upload_file.file, buffer)
     size = os.path.getsize(dest_path)
