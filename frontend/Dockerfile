@@ -1,7 +1,8 @@
 FROM node:18-alpine as build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
+RUN npm run build
 COPY . .
-EXPOSE 8989
-CMD ["npm", "run", "--", "--port", "5173"]
+EXPOSE 5173
+CMD ["npm", "start"]
