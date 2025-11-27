@@ -18,7 +18,7 @@ services:
       context: ./frontend
     pull_policy: build
     volumes:
-      - node_modules:/app/www/node_modules
+      - node_modules:/app/node_modules
     ports:
       - "8989:8081"
     depends_on:
