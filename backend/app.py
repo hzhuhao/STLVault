@@ -5,13 +5,8 @@ import shutil
 import sqlite3
 import json
 from pathlib import Path
-from typing import Optional, List, Dict, Any,
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from typing import Optional, List, Dict, Any
+
 
 DB_PATH = os.getenv("DB_PATH", "sqlite:///./data.db")
 UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
