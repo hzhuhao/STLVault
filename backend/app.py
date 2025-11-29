@@ -23,6 +23,12 @@ from pydantic import BaseModel
 DB_PATH = os.getenv("DB_PATH", "data.db")
 UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
 
+
+class FolderData(BaseModel):
+    name: str
+    parentId: str | None = None
+
+
 app = FastAPI(title="MakerVault API")
 app.add_middleware(
     CORSMiddleware,
@@ -121,11 +127,6 @@ def save_upload_file(upload_file: UploadFile, dest_path: str) -> int:
     return size
 
 
-class FolderData(BaseModel):
-    name: str
-    parentId: str = "null"
-
-
 # --- Folder endpoints ---
 @app.get("/api/folders")
 def get_folders():
@@ -138,7 +139,7 @@ def get_folders():
 
 
 @app.post("/api/folders")
-def create_folder(item=FolderData):
+def create_folder(item: FolderData):
     fid = str(uuid.uuid4())
     conn = get_db_conn()
     cur = conn.cursor()
