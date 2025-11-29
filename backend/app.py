@@ -139,16 +139,17 @@ def get_folders():
 
 @app.post("/api/folders")
 def create_folder(folder=FolderData):
+    folderdict = folder.model_dump()
     fid = str(uuid.uuid4())
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO folders(id,name,parentId) VALUES (?,?,?)",
-        (fid, folder.name, folder.parentId),
+        (fid, folderdict.name, folderdict.parentId),
     )
     conn.commit()
     conn.close()
-    return {"id": fid, "name": folder.name, "parentId": folder.parentId}
+    return {"id": fid, "name": folderdict.name, "parentId": folderdict.parentId}
 
 
 @app.patch("/api/folders/{folder_id}")
