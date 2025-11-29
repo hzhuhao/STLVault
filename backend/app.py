@@ -123,7 +123,7 @@ def save_upload_file(upload_file: UploadFile, dest_path: str) -> int:
 
 class FolderData(BaseModel):
     name: str
-    parentId: str | None
+    parentId: str = "null"
 
 
 # --- Folder endpoints ---
