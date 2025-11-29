@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse
 from starlette.middleware.cors import CORSMiddleware
 import json
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel
 
 DB_PATH = os.getenv("DB_PATH", "data.db")
@@ -26,7 +26,7 @@ UPLOAD_DIR = Path(os.getenv("FILE_STORAGE", "./app/uploads"))
 
 class FolderData(BaseModel):
     name: str
-    parentId: str | None = None
+    parentId: Union[str, None] = None
 
 
 app = FastAPI(title="MakerVault API")
