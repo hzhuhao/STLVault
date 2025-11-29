@@ -29,7 +29,7 @@ class FolderData(BaseModel):
     parentId: Union[str, None] = None
 
 
-app = FastAPI(title="MakerVault API")
+app = FastAPI(title="STLVault API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins="http://192.168.178.21:8989",
@@ -153,10 +153,10 @@ def create_folder(item: FolderData):
 
 
 @app.patch("/api/folders/{folder_id}")
-def update_folder(folder_id: str, name: str):
+def update_folder(folder_id: str, item: FolderData):
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("UPDATE folders SET name=? WHERE id=?", (name, folder_id))
+    cur.execute("UPDATE folders SET name=? WHERE id=?", (item.name, folder_id))
     if cur.rowcount == 0:
         conn.close()
         raise HTTPException(status_code=404, detail="Folder not found")
