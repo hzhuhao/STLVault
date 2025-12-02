@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repo
         uses: actions/checkout@main
@@ -25,7 +27,7 @@ jobs:
           find: "VERSION=.+"
           replace: "VERSION=${{ steps.version.outputs.version }}"
           include: |
-            docker-compose.yaml
+            docker-compose.yml
       
       - name: Tag and Release
         uses: BrandonStudio/tag-and-release@v1
