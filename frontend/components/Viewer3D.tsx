@@ -6,6 +6,8 @@ import { ThreeMFLoader } from 'three/examples/jsm/loaders/3MFLoader.js';
 import { Maximize, Minimize, FileWarning } from 'lucide-react';
 import * as THREE from 'three';
 
+const API_BASE_URL = process.env.REACT_APP_API + '/api';
+
 // Defined before usage to ensure proper type resolution
 interface ErrorBoundaryProps {
   children?: ReactNode;
@@ -50,7 +52,7 @@ const Model = ({ url, filename, color = '#3b82f6', onLoaded }: Viewer3DProps) =>
   const Loader = is3MF ? ThreeMFLoader : STLLoader;
 
   // Use the appropriate loader
-  const urlpath = "http://192.168.178.21:8988" + url
+  const urlpath = API_BASE_URL + url
   const data = useLoader(Loader as any, urlpath);
 
   const modelObject = useMemo(() => {
