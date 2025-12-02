@@ -34,4 +34,4 @@ jobs:
           tag_name: ${{ steps.version.outputs.v-version }}
           generate_release_notes: body
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
