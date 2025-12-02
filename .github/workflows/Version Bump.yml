@@ -1,0 +1,37 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@main
+
+      - name: Get next version
+        uses: reecetech/version-increment@2024.10.1
+        id: version
+        with:
+          scheme: conventional_commits
+
+      - name: Find and Replace
+        uses: thiagodnf/string-replacer@v1.0.2
+        with:
+          find: "VERSION=.+"
+          replace: "VERSION=${{ steps.version.outputs.version }}"
+          include: |
+            docker-compose.yaml
+      
+      - name: Tag and Release
+      - uses: BrandonStudio/tag-and-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.v-version }}
+          generate_release_notes: body
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }
