@@ -31,7 +31,7 @@ jobs:
         uses: thiagodnf/string-replacer@v1.0.2
         with:
           find: 'SEMVER=.+'
-          replace: 'SEMVER={{ steps.version.outputs.version }}'
+          replace: 'SEMVER=${{ steps.version.outputs.version }}'
           include: |
             stack.env
           
