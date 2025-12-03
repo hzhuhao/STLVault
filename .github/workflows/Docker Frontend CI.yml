@@ -3,6 +3,7 @@ name: Docker Frontend CI
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   docker:
