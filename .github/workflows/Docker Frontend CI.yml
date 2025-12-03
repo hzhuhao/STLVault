@@ -29,4 +29,4 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: tags: moddroid94/stlvault-frontend:latest,moddroid94/stlvault-frontend:${{ steps.version.outputs.current-v-version }}
+          tags: moddroid94/stlvault-frontend:latest,moddroid94/stlvault-frontend:${{ steps.version.outputs.current-v-version }}
