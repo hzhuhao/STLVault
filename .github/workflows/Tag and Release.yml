@@ -5,7 +5,7 @@ on:
     branches:
       - 'main'
     paths:
-      - 'stack.env'
+      - '.env'
   workflow_dispatch:
 
 jobs:
