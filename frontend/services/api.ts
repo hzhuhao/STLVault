@@ -251,7 +251,7 @@ export const api = {
     if (USE_MOCK_API) return model.url;
     //TODO: add options for slicer weblink
     let modelURL = `${API_BASE_URL}/models/${model.id}/download`;
-    return `orcasliceropen://open?file=${modelURL}`;
+    return `orcaslicer://open?file=${modelURL}`;
   },
 
   // 10. BULK DELETE
