@@ -11,10 +11,12 @@ import { api } from './services/api';
 import { FolderInput, Tags, X, Trash2, AlertTriangle, Download, FileUp, Globe } from 'lucide-react';
 import JSZip from 'jszip';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import { useVisualViewport } from './hooks/useVisualViewport';
 
 const App = () => {
   const isDesktop = useMediaQuery('(min-width: 1024px)', true);
   const isMobile = !isDesktop;
+  const visualViewport = useVisualViewport();
 
   const [folders, setFolders] = useState<Folder[]>([]);
   const [models, setModels] = useState<STLModel[]>([]);
@@ -603,8 +605,23 @@ const App = () => {
         
         {/* Upload Modal */}
         {showUploadModal && (
-            <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div
+                className={`fixed left-0 top-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      240,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                             <FileUp className="w-5 h-5 text-blue-500" /> Upload Files
@@ -671,8 +688,23 @@ const App = () => {
         
         {/* Import URL Modal */}
         {showImportModal && (
-            <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div
+                className={`fixed left-0 top-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      240,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                             <Globe className="w-5 h-5 text-indigo-500" /> Import from URL
@@ -734,8 +766,23 @@ const App = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmState.isOpen && (
-            <div className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div
+                className={`fixed left-0 top-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      240,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
                     <div className="flex flex-col items-center text-center mb-6">
                         <div className="w-12 h-12 bg-red-900/30 rounded-full flex items-center justify-center mb-4">
                             <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -767,8 +814,23 @@ const App = () => {
         )}
 
         {showMoveModal && (
-            <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-80 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div
+                className={`fixed left-0 top-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-80 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      200,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-white flex items-center gap-2"><FolderInput className="w-4 h-4" /> Move to Folder</h3>
                         <button onClick={() => setShowMoveModal(false)} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
@@ -789,8 +851,23 @@ const App = () => {
         )}
 
         {showTagModal && (
-            <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div
+                className={`fixed left-0 top-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      240,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-white flex items-center gap-2"><Tags className="w-4 h-4" /> Add Tags</h3>
                         <button onClick={() => setShowTagModal(false)} className="text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>

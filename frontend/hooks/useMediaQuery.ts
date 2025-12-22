@@ -17,16 +17,8 @@ export function useMediaQuery(query: string, defaultValue = false): boolean {
     // Ensure state is in sync (query could change)
     setMatches(mql.matches);
 
-    if (typeof mql.addEventListener === 'function') {
-      mql.addEventListener('change', onChange);
-      return () => mql.removeEventListener('change', onChange);
-    }
-
-    // Safari < 14
-    // eslint-disable-next-line deprecation/deprecation
-    mql.addListener(onChange);
-    // eslint-disable-next-line deprecation/deprecation
-    return () => mql.removeListener(onChange);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, [query]);
 
   return matches;

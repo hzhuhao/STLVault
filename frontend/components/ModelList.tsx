@@ -49,12 +49,19 @@ const ModelList: React.FC<ModelListProps> = ({
   const [sortBy, setSortBy] = useState<SortOption>('date-desc');
   const [activeMenuModelId, setActiveMenuModelId] = useState<string | null>(null);
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setActiveMenuModelId(null);
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints ?? 0) > 0;
+    setIsTouchDevice(Boolean(isTouch));
   }, []);
 
   const processedModels = useMemo(() => {
@@ -173,7 +180,7 @@ const ModelList: React.FC<ModelListProps> = ({
   const selectionMode = selectedIds.size > 0;
 
   return (
-    <div 
+    <div
       className="flex-1 p-4 sm:p-8 h-full overflow-y-auto bg-vault-800 relative flex flex-col"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -280,6 +287,15 @@ const ModelList: React.FC<ModelListProps> = ({
               <FileBox className="w-16 h-16 mb-4 opacity-50" />
               <p className="text-lg">This folder is empty</p>
               <p className="text-sm">Drag and drop STL or STEP files to upload</p>
+              {isTouchDevice && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-4 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Tap to choose files
+                </button>
+              )}
             </>
           )}
         </div>

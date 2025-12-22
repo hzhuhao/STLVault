@@ -8,7 +8,10 @@ pnpm-debug.log*
 lerna-debug.log*
 bun-debug.log*
 
+# Dependency directories
 node_modules
+
+# Build output
 dist
 dist-ssr
 *.local
@@ -24,8 +27,23 @@ dist-ssr
 *.sln
 *.sw?
 
+# Virtual Environments
 .venv
 venv/
 
+# Python
 __pycache__
 *.pyc
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+
+# Backend
+/backend/__pycache__/
+/backend/app/uploads/
+/backend/data/
+/backend/*.db
+/backend/uploads/
