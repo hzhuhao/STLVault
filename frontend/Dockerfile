@@ -11,7 +11,7 @@ WORKDIR /app
 
 COPY package.json .
 
-RUN bun install
+RUN bun install --omit=dev
 
 COPY . .
 
