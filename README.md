@@ -1,4 +1,5 @@
-# STLVault
+![logo](https://github.com/moddroid94/STLVault/blob/main/frontend/assets/android-chrome-192x192.png)
+# STLVault 
 
 ![Project Status](https://img.shields.io/badge/Status-Work_In_Progress-orange?style=for-the-badge)
 ![GitHub Release](https://img.shields.io/github/v/release/moddroid94/STLVault?display_name=release&style=for-the-badge&logo=github)
