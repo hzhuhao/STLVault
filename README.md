@@ -31,7 +31,7 @@
 - **Frontend:** React (TS), Vite
 - **Backend:** Python (FastAPI)
 - **Database:** SQLite
-- **Package Manager:** NPM
+- **Package Manager:** NPM, UV
 - **Containerization:** Docker & Docker Compose 
 
 ---
