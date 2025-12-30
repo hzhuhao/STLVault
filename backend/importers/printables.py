@@ -1,6 +1,8 @@
 import requests
 import time
 import re
+import logging
+
 
 
 MODELQUERY = """
@@ -150,7 +152,6 @@ class PrintablesImporter():
         self.fileName = ""
         self.fileType = ""
         self.filePreviewPath = ""
-        self.fileData: None
         self.fileResult: bool
         self.fileDownloadLink = ""
 
@@ -168,6 +169,7 @@ class PrintablesImporter():
             return response.status_code
 
         self.clientId = re.search("data-client-uid=\"(([a-z0-9-])+)", response.text)[1]
+        logging.info("clientid= %s",self.clientId)
         return True
     
     def _set_model_info(self, modelId, modelNr: int):
@@ -190,6 +192,7 @@ class PrintablesImporter():
             return response.status_code
         
         modelData = response.json()
+        logging.info("response= %s",response.text)
         try:
             self.fileId = modelData["data"]["model"]["stls"][modelNr]["id"]
             self.fileName = modelData["data"]["model"]["stls"][modelNr]["name"]
@@ -213,14 +216,13 @@ class PrintablesImporter():
         }
         variables = {"fileType":self.fileType,"id":self.fileId,"modelId":self.modelId,"source":"model_detail"}
 
-        response = self.session.post("https://api.printables.com/graphql/", json={'query': FILEQUERY , 'variables': variables}, headers=header)
+        response = self.session.post(self.graphurl, json={'query': FILEQUERY , 'variables': variables}, headers=header)
         if response.status_code != 200:
-            raise Exception
-        
+            return response.status_code
+        fileData = response.json()
         try:
-            self.fileData = response.json()
-            self.fileResult = self.fileData["data"]["getDownloadLink"]["ok"]
-            self.fileDownloadLink = self.fileData["data"]["getDownloadLink"]["output"]["link"]
+            self.fileResult = fileData["data"]["getDownloadLink"]["ok"]
+            self.fileDownloadLink = fileData["data"]["getDownloadLink"]["output"]["link"]
         except Exception as e:
             raise e
 
