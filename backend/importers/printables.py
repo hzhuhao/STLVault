@@ -229,7 +229,7 @@ class PrintablesImporter():
                     "id": model["id"],
                     "name": model["name"],
                     "folder": model["folder"],
-                    "previewPath": "https://files.printables.com/" + model["filepreviewPath"],
+                    "previewPath": "https://files.printables.com/" + model["filePreviewPath"],
                     "typeName": "stl",
                   }
                 )
