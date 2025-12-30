@@ -235,8 +235,6 @@ class PrintablesImporter():
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
             }
             file = self.session.get(self.fileDownloadLink, allow_redirects=True, headers=fileheader)
-            if file.status_code != 200:
-                raise Exception
             return file
     
     def importfromURL(self, url):
@@ -251,9 +249,8 @@ class PrintablesImporter():
             return None
         
         try:
-            file = self._get_file()
-            return file
+            return self._get_file()
         except Exception as e:
-            return e
+            raise e
         finally:
             self.session.close()
