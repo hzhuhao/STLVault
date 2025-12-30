@@ -5,7 +5,7 @@ import ModelList from './components/ModelList';
 import DetailPanel from './components/DetailPanel';
 import Settings from './components/Settings';
 import Navbar from './components/Navbar';
-import { STLModel, Folder, StorageStats } from './types';
+import { STLModel, Folder, StorageStats, STLModelCollection } from './types';
 import { generateThumbnail } from './services/thumbnailGenerator';
 import { api } from './services/api';
 import { FolderInput, Tags, X, Trash2, AlertTriangle, Download, FileUp, Globe } from 'lucide-react';
@@ -45,8 +45,12 @@ const App = () => {
 
   // Import Modal State
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showImportOptionsModal, setShowImportOptionsModal] = useState(false);
+  const [modelsOptions, setModelsOptions] = useState<STLModelCollection[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
   const [importUrl, setImportUrl] = useState('');
   const [importFolderId, setImportFolderId] = useState('');
+
 
   // Delete Confirmation State
   const [deleteConfirmState, setDeleteConfirmState] = useState<{
@@ -238,6 +242,8 @@ const App = () => {
 
   const handleOpenImport = () => {
     setImportUrl('');
+    setSelectedOptions(new Set());
+    setModelsOptions([])
     // Pre-select current folder if specific, otherwise first available
     setImportFolderId(currentFolderId !== 'all' ? currentFolderId : (folders[0]?.id || ''));
     setShowImportModal(true);
@@ -250,13 +256,23 @@ const App = () => {
     setIsLoading(true);
     try {
       const ModelOptions = await api.retrieveModelOptions(importUrl);
-      console.log(ModelOptions)
+      setModelsOptions(ModelOptions)
       setShowImportModal(false);
-
+      setShowImportOptionsModal(true)
     } catch (error) {
       console.error("Import failed:", error);
       alert("Failed to import from URL");
     }
+  };
+
+  const handleOptionsToggleSelection = (id: string) => {
+    const newSet = new Set(selectedOptions);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedOptions(newSet);
   };
 
   const handleImportChoice = async (e: React.FormEvent) => {
@@ -776,6 +792,57 @@ const App = () => {
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        )}
+
+        {/* Import Options Modal */}
+        {showImportOptionsModal && (
+            <div
+                className={`fixed left-0 top-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center p-4 ${visualViewport.keyboardOpen ? 'items-start' : 'items-center'}`}
+                style={{
+                  width: '100%',
+                  height: visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0),
+                  transform: `translate(${visualViewport.offsetLeft}px, ${visualViewport.offsetTop}px)`,
+                }}
+            >
+                <div
+                  className="bg-vault-800 border border-vault-600 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto"
+                  style={{
+                    maxHeight: Math.max(
+                      240,
+                      (visualViewport.height || (typeof window !== 'undefined' ? window.innerHeight : 0)) - 32
+                    ),
+                  }}
+                >
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <Globe className="w-5 h-5 text-indigo-500" /> Select model to download
+                        </h3>
+                        <button onClick={() => setShowImportOptionsModal(false)} className="text-slate-400 hover:text-white">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    
+                    {/* Render Folders First */}
+                    {modelsOptions.map(model => (
+                        <div
+                            key={model.id}
+                            onClick={() => handleOptionsToggleSelection(model.id)}
+                            className={`group bg-vault-900 border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-4 relative overflow-hidden
+                              ${selectedOptions.has(model.id) ? 'border-blue-500 ring-1 ring-blue-500/50' : 'border-vault-700 hover:border-vault-600'}
+                            `}
+                        >
+                            <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-500 group-hover:text-blue-400 group-hover:scale-110 transition-all shrink-0">
+                                
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-semibold text-slate-200 truncate group-hover:text-white">{model.name}</h3>
+                                <p className="text-xs text-slate-500">Select</p>
+                            </div>
+                            
+                        </div>
+                    ))}
                 </div>
             </div>
         )}
