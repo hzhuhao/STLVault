@@ -239,16 +239,16 @@ class PrintablesImporter():
     
     def importfromURL(self, url):
         self.session = requests.Session()
-
-        if self._set_client_data(url) is not True:
-            return None
-        
         modelId = re.search(r"model/(\d+)", url)[1]
-
-        if self._set_model_info(modelId, 0) is not True:
+        if modelId is None:
             return None
-        
         try:
+            self._set_client_data(url)
+            time.sleep(0.2)
+
+            self._set_model_info(modelId, 0)
+            time.sleep(0.2)
+
             return self._get_file()
         except Exception as e:
             raise e
