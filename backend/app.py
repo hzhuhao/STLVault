@@ -402,14 +402,8 @@ def import_model(payload: dict):
                 raise ValueError("File Is Empty")
         else:
             raise ValueError("URL is None")
-    except Exception:
-        # create empty valid binary STL (80 byte header + 4 byte count)
-        header = bytes(80)
-        count = (0).to_bytes(4, "little")
-        with open(path, "wb") as fh:
-            fh.write(header)
-            fh.write(count)
-        size = os.path.getsize(path)
+    except Exception as e:
+        raise e
 
     model = {
         "id": mid,
