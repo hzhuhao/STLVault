@@ -390,10 +390,10 @@ def import_model(payload: dict):
     filename = f"{mid}{ext}"
     path = os.path.join(UPLOAD_DIR, filename)
 
-    # Check if url is not None before calling requests.get(url, ...)
+    # Check if url is not None before calling importer
     try:
         if url is not None:
-            file = importer.importfromURL(url)
+            file, fileName, thumbnail = importer.importfromURL(url)
             if file is not None:
                 with open(path, "wb") as fh:
                     fh.write(file.content)
@@ -407,13 +407,14 @@ def import_model(payload: dict):
 
     model = {
         "id": mid,
-        "name": os.path.basename(filename),
+        "name": fileName,
         "folderId": folderId if folderId != "all" else "1",
         "url": f"/api/models/{mid}/download",
         "size": size,
         "dateAdded": now_ms(),
         "tags": ["imported"],
         "description": f"Imported from {url}",
+        "thumbnail": thumbnail
     }
 
     conn = get_db_conn()
@@ -429,7 +430,7 @@ def import_model(payload: dict):
             model["dateAdded"],
             json.dumps(model["tags"]),
             model["description"],
-            None,
+            model["thumbnail"],
         ),
     )
     conn.commit()

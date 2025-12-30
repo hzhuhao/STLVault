@@ -1,7 +1,7 @@
 import requests
 import time
 import re
-import logging
+import base64
 
 
 
@@ -217,7 +217,7 @@ class PrintablesImporter():
         print(variables)
         response = self.session.post(self.graphurl, json={'query': FILEQUERY , 'variables': variables}, headers=header)
         if response.status_code != 200:
-            return response.status_code
+            return None
         fileData = response.json()
         try:
             self.fileResult = fileData["data"]["getDownloadLink"]["ok"]
@@ -238,6 +238,20 @@ class PrintablesImporter():
             file = self.session.get(self.fileDownloadLink, allow_redirects=True, headers=fileheader)
             return file
     
+    def _make_thumbnail(self):
+        fileheader = {
+                "accept": "image/*, application/json, text/event-stream, multipart/mixed",
+                "accept-language": "en",
+                "client-uid" : self.clientId,
+                "cache-control": "no-cache",
+                "pragma": "no-cache",
+                "priority": "u=1, i",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            }
+        file = self.session.get("https://files.printables.com/" + self.filePreviewPath, allow_redirects=True, headers=fileheader)
+        encoded_string = base64.b64encode(file.content)
+        return encoded_string
+
     def importfromURL(self, url):
         self.session = requests.Session()
         modelId = re.search(r"model/(\d+)", url)[1]
@@ -246,11 +260,12 @@ class PrintablesImporter():
         try:
             self._set_client_data(url)
             time.sleep(0.2)
-
             self._set_model_info(modelId, 0)
             time.sleep(0.2)
-
-            return self._get_file(modelId)
+            file = self._get_file(modelId)
+            time.sleep(0.2)
+            thumbnail = self._make_thumbnail()
+            return file, self.fileName, thumbnail
         except Exception as e:
             raise e
         finally:
