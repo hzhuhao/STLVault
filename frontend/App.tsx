@@ -278,7 +278,7 @@ const App = () => {
     if (!importUrl || !importFolderId) return;
     
     setIsLoading(true);
-
+    setShowImportOptionsModal(false);
     try {
       for (const model of modelsOptions) {
         if (selectedOptions.has(model.id)) {
