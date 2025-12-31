@@ -377,10 +377,13 @@ def bulk_tag(payload: dict):
     return {"ok": True}
 
 
-@app.post("/api/models/import")
-def import_model(payload: dict):
+@app.post("/api/printables/importid")
+def import_model_by_id(payload: dict):
     importer = printables.PrintablesImporter()
-    url = payload.get("url")
+    modelId = payload.get("id")
+    modelName = payload.get("name")
+    parentId = payload.get("parentId")
+    previewPath = payload.get("previewPath")
     folderId = payload.get("folderId", "1")
     mid = str(uuid.uuid4())
     
@@ -392,8 +395,8 @@ def import_model(payload: dict):
 
     # Check if url is not None before calling importer
     try:
-        if url is not None:
-            file, fileName, thumbnail = importer.importfromURL(url)
+        if modelId is not None:
+            file, thumbnail = importer.importfromId(modelId, parentId, previewPath)
             if file is not None:
                 with open(path, "wb") as fh:
                     fh.write(file.content)
@@ -407,13 +410,13 @@ def import_model(payload: dict):
 
     model = {
         "id": mid,
-        "name": fileName,
+        "name": modelName,
         "folderId": folderId if folderId != "all" else "1",
         "url": f"/api/models/{mid}/download",
         "size": size,
         "dateAdded": now_ms(),
         "tags": ["imported"],
-        "description": f"Imported from {url}",
+        "description": "Imported from Printables",
         "thumbnail": thumbnail
     }
 
@@ -437,7 +440,8 @@ def import_model(payload: dict):
     conn.close()
     return model
 
-@app.post("/api/models/options")
+
+@app.post("/api/printables/options")
 def import_model_options(payload: dict):
     importer = printables.PrintablesImporter()
     url = payload.get("url")
@@ -452,6 +456,7 @@ def import_model_options(payload: dict):
         raise ValueError("URL is None")
     except Exception as e:
         raise e
+
 
 @app.put("/api/models/{model_id}/file")
 def replace_model_file(

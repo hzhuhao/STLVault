@@ -253,7 +253,6 @@ const App = () => {
     e.preventDefault();
     if (!importUrl || !importFolderId) return;
     
-    setIsLoading(true);
     try {
       const ModelOptions = await api.retrieveModelOptions(importUrl);
       setModelsOptions(ModelOptions)
@@ -280,11 +279,14 @@ const App = () => {
     if (!importUrl || !importFolderId) return;
     
     setIsLoading(true);
+
     try {
-      const newModel = await api.importModelFromUrl(importUrl, importFolderId);
-      setModels(prev => [newModel, ...prev]);
-      setShowImportModal(false);
-      setImportUrl('');
+      for (const model of modelsOptions) {
+        if (selectedOptions.has(model.id)) {
+          let newModel = await api.importModelFromId(model.id, model.name, model.parentId, model.previewPath, importFolderId);
+          setModels(prev => [newModel, ...prev]);
+        }
+      }
     } catch (error) {
       console.error("Import failed:", error);
       alert("Failed to import from URL");
@@ -824,24 +826,33 @@ const App = () => {
                         </button>
                     </div>
                     
-                    {/* Render Folders First */}
+                    {/* File List */}
                     {modelsOptions.map(model => (
                         <div
                             key={model.id}
                             onClick={() => handleOptionsToggleSelection(model.id)}
-                            className={`group bg-vault-900 border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-4 relative overflow-hidden
+                            className={`group bg-vault-900 border rounded-xl p-4 cursor-pointer transition-all flex items-center gap-4 pb-2 relative overflow-hidden
                               ${selectedOptions.has(model.id) ? 'border-blue-500 ring-1 ring-blue-500/50' : 'border-vault-700 hover:border-vault-600'}
                             `}
                         >
                             <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-500 group-hover:text-blue-400 group-hover:scale-110 transition-all shrink-0">
-                                
+                                <img 
+                                  src={model.previewPath} 
+                                  alt={model.name} 
+                                  className="w-12 h-12 object-contain p-2 opacity-80 group-hover:opacity-100 transition-opacity" 
+                                />
                             </div>
+
                             <div className="min-w-0">
                                 <h3 className="font-semibold text-slate-200 truncate group-hover:text-white">{model.name}</h3>
-                                <p className="text-xs text-slate-500">Select</p>
+                                <p className="text-xs text-slate-500">{model.typeName}</p>
                             </div>
                             
                         </div>
+                        <div 
+                            onClick={() => handleImportChoice()}
+                            className="flex-1 py-2 rounded-lg bg-vault-700 hover:bg-vault-600 text-slate-200 font-medium transition-colors"
+                        > Import </div>
                     ))}
                 </div>
             </div>

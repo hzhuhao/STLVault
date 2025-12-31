@@ -147,10 +147,6 @@ class PrintablesImporter():
         self.session: requests.Session
         self.graphurl = "https://api.printables.com/graphql/"
         self.clientId= ""
-        self.fileId = ""
-        self.fileName = ""
-        self.fileType = ""
-        self.filePreviewPath = ""
         self.fileResult: bool
         self.fileDownloadLink = ""
 
@@ -169,36 +165,6 @@ class PrintablesImporter():
 
         self.clientId = re.search("data-client-uid=\"(([a-z0-9-])+)", response.text)[1]
 
-        return True
-    
-    def _set_model_info(self, modelId, modelNr: int):
-        header = {
-            "accept": "application/graphql-response+json, application/graphql+json, application/json, text/event-stream, multipart/mixed",
-            "accept-language": "en",
-            "client-uid" : self.clientId,
-            "cache-control": "no-cache",
-            "content-type": "application/json",
-            "graphql-client-version": "v3.0.11",
-            "pragma": "no-cache",
-            "priority": "u=1, i",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-        }
-        variables = {"id": modelId}
-
-        response = self.session.post(self.graphurl, json={'query': MODELQUERY , 'variables': variables}, headers=header)
-
-        if response.status_code != 200:
-            return response.status_code
-        
-        modelData = response.json()
-
-        try:
-            self.fileId = modelData["data"]["model"]["stls"][modelNr]["id"]
-            self.fileName = modelData["data"]["model"]["stls"][modelNr]["name"]
-            self.fileType = modelData["data"]["model"]["stls"][modelNr]["name"].split(".")[-1]
-            self.filePreviewPath = modelData["data"]["model"]["stls"][modelNr]["filePreviewPath"]
-        except Exception as e:
-            raise e
         return True
     
     def _get_model_info(self, modelId):
@@ -226,6 +192,7 @@ class PrintablesImporter():
             for model in modelData["data"]["model"]["stls"]:
                 modelCollection.append(
                   {
+                    "parentId": modelId,
                     "id": model["id"],
                     "name": model["name"],
                     "folder": model["folder"],
@@ -233,11 +200,11 @@ class PrintablesImporter():
                     "typeName": "stl",
                   }
                 )
+            return modelCollection
         except Exception as e:
             raise e
-        return modelCollection
-  
-    def _get_file(self, modelId):
+        
+    def _get_file(self, modelId, parentId):
         header = {
             "accept": "application/graphql-response+json, application/graphql+json, application/json, text/event-stream, multipart/mixed",
             "accept-language": "en",
@@ -249,8 +216,8 @@ class PrintablesImporter():
             "priority": "u=1, i",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
         }
-        variables = {"fileType":self.fileType,"id":self.fileId,"modelId":modelId,"source":"model_detail"}
-        print(variables)
+        variables = {"fileType":"stl","id":modelId,"modelId":parentId,"source":"model_detail"}
+
         response = self.session.post(self.graphurl, json={'query': FILEQUERY , 'variables': variables}, headers=header)
         if response.status_code != 200:
             return None
@@ -274,7 +241,7 @@ class PrintablesImporter():
             file = self.session.get(self.fileDownloadLink, allow_redirects=True, headers=fileheader)
             return file
     
-    def _make_thumbnail(self):
+    def _make_thumbnail(self, url):
         fileheader = {
                 "accept": "image/*, application/json, text/event-stream, multipart/mixed",
                 "accept-language": "en",
@@ -284,29 +251,24 @@ class PrintablesImporter():
                 "priority": "u=1, i",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
             }
-        file = self.session.get("https://files.printables.com/" + self.filePreviewPath, allow_redirects=True, headers=fileheader)
+        file = self.session.get(url, allow_redirects=True, headers=fileheader)
         encoded_string = base64.b64encode(file.content)
         return "data:image/png;base64," + encoded_string.decode()
 
-    def importfromURL(self, url):
+    def importfromId(self, modelId, parentId, previewPath):
         self.session = requests.Session()
-        modelId = re.search(r"model/(\d+)", url)[1]
-        if modelId is None:
-            return None
         try:
-            self._set_client_data(url)
-            time.sleep(0.2)
-            self._set_model_info(modelId, 0)
-            time.sleep(0.2)
-            file = self._get_file(modelId)
-            time.sleep(0.2)
-            thumbnail = self._make_thumbnail()
-            return file, self.fileName, thumbnail
+            self._set_client_data("https://www.printables.com/")
+            time.sleep(0.1)
+            file = self._get_file(modelId, parentId)
+            time.sleep(0.1)
+            thumbnail = self._make_thumbnail(previewPath)
+            return file, thumbnail
         except Exception as e:
             raise e
         finally:
             self.session.close()
-    
+
     def getModelOptions(self, url):
         self.session = requests.Session()
         modelId = re.search(r"model/(\d+)", url)[1]
@@ -321,4 +283,3 @@ class PrintablesImporter():
             raise e
         finally:
             self.session.close()
-    
