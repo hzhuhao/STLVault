@@ -274,8 +274,7 @@ const App = () => {
     setSelectedOptions(newSet);
   };
 
-  const handleImportChoice = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleImportChoice = async () => {
     if (!importUrl || !importFolderId) return;
     
     setIsLoading(true);
