@@ -27,16 +27,24 @@ jobs:
         with:
           scheme: conventional_commits
 
-      - name: Find and Replace
+      - name: Find and Replace in env
         uses: thiagodnf/string-replacer@v1.0.2
         with:
           find: "SEMVER=.+"
           replace: "SEMVER=${{ steps.version.outputs.version }}"
           include: |
             .env
+      
+      - name: Find and Replace in package
+        uses: thiagodnf/string-replacer@v1.0.2
+        with:
+          find: '"version": ".+"'
+          replace: '"version": "${{ steps.version.outputs.version }}"'
+          include: |
+            frontend/package.json
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
           message: ${{ github.event.pull_request.title }}
-          add: ".env"
+          add: '[".env", "frontend/package.json"]'
