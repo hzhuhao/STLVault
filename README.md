@@ -44,10 +44,11 @@
 
 ## 📸 Screenshots
 
-![Dashboard Preview](https://github.com/user-attachments/assets/3c1fe88f-d2e4-42ee-a99d-9c22809d64ca)
+![Dashboard Preview](https://github.com/user-attachments/assets/3d8aa851-392c-4bd0-8819-2a802ec63e2c)
+![Setting Page](https://github.com/user-attachments/assets/f1326a8c-3ef0-4b17-be5a-e75aea2cb59a)
 ![Upload Modal Preview](https://github.com/user-attachments/assets/34f995d3-bc09-489f-92f3-1408bf0196a0)
 ![Model Viewer/Info Preview](https://github.com/user-attachments/assets/ac373cf5-3952-4336-8b56-e2864127c3aa)
-![Settings Preview](https://github.com/user-attachments/assets/95adf21c-f8e8-45ad-b07c-1fac7f821b62)
+
 
 
 ---
@@ -56,7 +57,7 @@
 
 The recommended way to deploy STLVault is using **Docker Compose** or via a container management tool like **Portainer**.
 
-Images are available on docker-hub if you prefer, instead of cloning the repo just replace the build steps with the image.
+**Images are available on docker-hub, just replace the build steps with the image tag in the docker-compose. (you will need to set the API Host in the app settings)**
 
 ### Option 1: Docker Compose (CLI)
 
