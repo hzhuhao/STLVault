@@ -987,8 +987,8 @@ const App = () => {
                   {/* File List */}
                   <div
                     className={`static overflow-auto px-2 ${
-                  visualViewport.height > 900 ? "h-[700px]" : "h-[400px]"
-                }`}
+                      visualViewport.height > 900 ? "h-[700px]" : "h-[400px]"
+                    }`}
                   >
                     {Array.from(folderOptions).map((f) => (
                       <div>

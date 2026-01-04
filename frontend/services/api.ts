@@ -210,6 +210,22 @@ export const api = {
     return res.json();
   },
 
+  // 14a. REPLACE FILE
+  replaceModelThumbnail: async (
+    id: string,
+    file: File,
+  ): Promise<STLModel> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_BASE_URL}/models/${id}/thumbnail`, {
+      method: "PUT",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("File replacement failed");
+    return res.json();
+  },
+
   // 15. GET Storage Stats
   getStorageStats: async (): Promise<StorageStats> => {
     const res = await fetch(`${API_BASE_URL}/storage-stats`);

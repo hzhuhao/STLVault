@@ -9,8 +9,6 @@ import {
   Check,
   X,
   ChevronRight,
-  ChevronDown,
-  FolderOpen,
   Settings,
 } from "lucide-react";
 import { Folder, STLModel, StorageStats } from "../types";
@@ -119,7 +117,7 @@ const FolderNode: React.FC<FolderNodeProps> = ({
     <div>
       {/* Folder Row */}
       <div
-        className={`relative group flex items-center pr-2 min-h-[36px] transition-colors
+        className={`relative group flex items-center pr-2 min-h-[36px] transition-colors rounded-md
           ${
             isDropTarget
               ? "bg-blue-600/40 text-blue-200 ring-1 ring-blue-400"
@@ -128,25 +126,25 @@ const FolderNode: React.FC<FolderNodeProps> = ({
               : "text-slate-400 hover:bg-vault-800 hover:text-slate-200"
           }
         `}
-        style={{ paddingLeft: `${level * 16 + 12}px` }}
+        style={{ paddingLeft: `${level * 15 + 5}px` }}
         onDragOver={(e) => onDragOver(e, folder.id)}
         onDragLeave={onDragLeave}
         onDrop={(e) => onDrop(e, folder.id)}
       >
         {/* Expand Toggle */}
         <div
-          className="w-5 h-5 flex items-center justify-center shrink-0 cursor-pointer hover:text-white hover:bg-vault-600 rounded-md mr-1 "
+          className="w-5 h-5 flex items-center justify-center shrink-0 cursor-pointer hover:text-white hover:bg-vault-600 rounded-md mr-2 "
           onClick={(e) => {
             e.stopPropagation();
             onToggleExpand(folder.id);
           }}
         >
           {hasChildren ? (
-            isExpanded ? (
-              <ChevronDown className="w-4 h-4 bg-vault-700 rounded-md " />
-            ) : (
-              <ChevronRight className="w-4 h-4 bg-vault-700 rounded-md" />
-            )
+            <ChevronRight
+              className={`w-5 h-5 bg-vault-700 rounded-md transition ${
+                isExpanded ? `rotate-90` : ``
+              }`}
+            />
           ) : (
             // Placeholder to keep alignment
             <div className="w-4 h-4" />
@@ -188,18 +186,14 @@ const FolderNode: React.FC<FolderNodeProps> = ({
               className="flex-1 flex items-center gap-2 min-w-0 cursor-pointer py-1.5"
               onClick={() => onSelect(folder.id)}
             >
-              {isExpanded || isDropTarget ? (
-                <FolderOpen className="w-4 h-4 shrink-0" />
-              ) : (
-                <FolderIcon className="w-4 h-4 shrink-0" />
-              )}
+              <FolderIcon className="w-4 h-4 shrink-0" />
               <span className="text-sm font-medium truncate select-none">
                 {folder.name}
               </span>
             </div>
 
             {/* Hover Actions */}
-            <div className="absolute right-5 items-center opacity-0 group-hover:opacity-100 transition-opacity ml-2 bg-vault-900/50 backdrop-blur-sm rounded px-1">
+            <div className="absolute right-10 items-center opacity-0 group-hover:opacity-100 transition-opacity bg-vault-900/50 backdrop-blur-sm rounded p-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -235,9 +229,9 @@ const FolderNode: React.FC<FolderNodeProps> = ({
 
             {/* Count Badge */}
             <span
-              className={`text-xs ml-2 ${
-                isSelected ? "text-blue-500" : "text-slate-600"
-              } min-w-[1.5rem] text-right`}
+              className={`text-xs px-2 py-1 rounded-md bg-vault-800 group-hover:bg-vault-700 transition ${
+                isSelected ? "text-blue-500" : "text-slate-400"
+              } `}
             >
               {count}
             </span>
