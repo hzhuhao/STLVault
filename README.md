@@ -1,5 +1,6 @@
 ![logo](https://github.com/moddroid94/STLVault/blob/main/frontend/assets/android-chrome-192x192.png)
-# STLVault 
+
+# STLVault
 
 ![Project Status](https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge)
 ![GitHub Release](https://img.shields.io/github/v/release/moddroid94/STLVault?display_name=release&style=for-the-badge&logo=github)
@@ -11,8 +12,6 @@
 
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-
-
 **STLVault** is a containerized 3D Model library manager and organizer, designed specifically for 3D printing enthusiasts. It provides a clean, modern web interface to manage your growing collection of STL, STEP, and 3MF files.
 
 > **Note:** This project is currently in Beta. While the core functionality (importing, organizing, viewing) works, expect changes and improvements.
@@ -23,7 +22,7 @@
 
 - **📂 Nestable Folders:** Organize your models into a deep hierarchy that makes sense to you.
 - **🪄 Open in Slicer:** Let's you open the model direclty in your slicer.
-- **🔗 URL Import:** Import multiple files from Printables URL, with granular file selection. (Only models URL, not collections)
+- **🔗 URL Import:** Import multiple files from Printables URL, with granular file selection. (Only models URL)
 - **🖱️ Drag n' Drop:** Seamlessly import new models or move files between folders.
 - **📦 Bulk Actions:** Tag, move, delete, download, or upload multiple files at once.
 - **👁️ 3D Preview:** Integrated web-based 3D viewer for STL and 3MF files.
@@ -38,7 +37,7 @@
 - **Backend:** Python (FastAPI)
 - **Database:** SQLite
 - **Package Manager:** NPM, UV
-- **Containerization:** Docker & Docker Compose 
+- **Containerization:** Docker & Docker Compose
 
 ---
 
@@ -49,17 +48,44 @@
 ![Upload Modal Preview](https://github.com/user-attachments/assets/34f995d3-bc09-489f-92f3-1408bf0196a0)
 ![Model Viewer/Info Preview](https://github.com/user-attachments/assets/ac373cf5-3952-4336-8b56-e2864127c3aa)
 
-
-
 ---
 
 ## 🚀 Deployment
 
 The recommended way to deploy STLVault is using **Docker Compose** or via a container management tool like **Portainer**.
 
-**Images are available on docker-hub, just replace the build steps with the image tag in the docker-compose. (you will need to set the API Host in the app settings)**
+## Docker Compose with Images
 
-### Option 1: Docker Compose (CLI)
+```
+services:
+  stlvbackend:
+    image: moddroid94/stlvault-backend:latest
+    pull_policy: build
+    environment:
+      - FILE_STORAGE=/app/uploads
+      - DB_PATH=/app/data/data.db
+      - WEBUI_URL=http://192.168.178.21:8999
+    ports:
+      - '8998:8080'
+    volumes:
+      - YOUR_FOLDER_PATH:/app/uploads
+      - YOUR_FOLDER_PATH:/app/data
+    restart: always
+  stlvfrontend:
+    image: moddroid94/stlvault-frontend:latest
+    pull_policy: build
+    volumes:
+      - node_modules:/app/node_modules
+    ports:
+      - '8999:5173'
+    depends_on:
+      - stlvbackend
+    restart: always
+volumes:
+  node_modules: null
+```
+
+### Docker Compose (CLI)
 
 1.  **Clone the repository:**
 
@@ -88,7 +114,7 @@ The recommended way to deploy STLVault is using **Docker Compose** or via a cont
 4.  **Access the App:**
     Open your browser and navigate to `http://localhost:8989` (or the port you configured).
 
-### Option 2: Portainer or GitOps (Recommended)
+### Portainer
 
 You can deploy STLVault directly from Portainer using the repository as a stack source.
 

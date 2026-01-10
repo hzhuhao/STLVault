@@ -342,7 +342,8 @@ const App = () => {
             model.name,
             model.parentId,
             model.previewPath,
-            importFolderId
+            importFolderId,
+            model.typeName
           );
           setUploadQueue((prev) => prev - 1);
           setModels((prev) => [newModel, ...prev]);
@@ -987,8 +988,8 @@ const App = () => {
                   {/* File List */}
                   <div
                     className={`static overflow-auto px-2 ${
-                  visualViewport.height > 900 ? "h-[700px]" : "h-[400px]"
-                }`}
+                      visualViewport.height > 900 ? "h-[700px]" : "h-[400px]"
+                    }`}
                   >
                     {Array.from(folderOptions).map((f) => (
                       <div>

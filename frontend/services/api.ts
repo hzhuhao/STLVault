@@ -181,12 +181,13 @@ export const api = {
     name: string,
     parentId: string,
     previewPath: string,
-    folderId: string
+    folderId: string,
+    typeName: string,
   ): Promise<STLModel> => {
     const res = await fetch(`${API_BASE_URL}/printables/importid`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, name, parentId, previewPath, folderId }),
+      body: JSON.stringify({ id, name, parentId, previewPath, folderId, typeName }),
     });
     if (!res.ok) throw new Error("Import failed");
     return res.json();
@@ -203,6 +204,22 @@ export const api = {
     if (thumbnail) formData.append("thumbnail", thumbnail);
 
     const res = await fetch(`${API_BASE_URL}/models/${id}/file`, {
+      method: "PUT",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("File replacement failed");
+    return res.json();
+  },
+
+  // 14a. REPLACE FILE
+  replaceModelThumbnail: async (
+    id: string,
+    file: File,
+  ): Promise<STLModel> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_BASE_URL}/models/${id}/thumbnail`, {
       method: "PUT",
       body: formData,
     });

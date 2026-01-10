@@ -3,6 +3,7 @@ import uuid
 import time
 import shutil
 import sqlite3
+import base64
 from fastapi import (
     FastAPI,
     UploadFile,
@@ -396,7 +397,7 @@ def replace_model_file(
                 pass
 
     filename_str = file.filename or ".stl"
-    ext = os.path.splitext(filename_str)[1] or ".stl"
+    ext = os.path.splitext(filename_str)[-1] or ".stl"
     filename = f"{model_id}{ext}"
     path = os.path.join(UPLOAD_DIR, filename)
     size = save_upload_file(file, path)
@@ -404,6 +405,38 @@ def replace_model_file(
     cur.execute(
         "UPDATE models SET url=?, size=?, thumbnail=? WHERE id=?",
         (f"/api/models/{model_id}/download", size, thumbnail, model_id),
+    )
+    conn.commit()
+    row = cur.execute("SELECT * FROM models WHERE id=?", (model_id,)).fetchone()
+    conn.close()
+    return row_to_model(row)
+
+
+@app.put("/api/models/{model_id}/thumbnail")
+def replace_model_thumbnail(
+    model_id: str, file: UploadFile = File(...)
+):
+    filename_str = file.filename
+    ext = os.path.splitext(filename_str)[-1]
+    if not ext:
+        raise HTTPException(status_code=429, detail="File not Valid, Extension not found")
+    
+    filebytes = file.file.read()
+    encoded_string = base64.b64encode(filebytes)
+    baseext = ext[1:]
+    thumbnail =  "data:image/" + baseext + ";base64," + encoded_string.decode()
+    
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    m = cur.execute("SELECT * FROM models WHERE id=?", (model_id,)).fetchone()
+    if not m:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    cur.execute(
+        "UPDATE models SET thumbnail=? WHERE id=?",
+        (thumbnail, model_id),
     )
     conn.commit()
     row = cur.execute("SELECT * FROM models WHERE id=?", (model_id,)).fetchone()

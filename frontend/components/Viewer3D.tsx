@@ -59,6 +59,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 interface Viewer3DProps {
   url: string;
   filename: string;
+  thumbnail;
   color?: string;
   onLoaded?: (dimensions: { x: number; y: number; z: number }) => void;
 }
@@ -66,6 +67,7 @@ interface Viewer3DProps {
 const Model = ({
   url,
   filename,
+  thumbnail,
   color = "#3b82f6",
   onLoaded,
 }: Viewer3DProps) => {
@@ -149,16 +151,20 @@ const Model = ({
   );
 };
 
-const Viewer3D: React.FC<Viewer3DProps> = ({ url, filename, onLoaded }) => {
+const Viewer3D: React.FC<Viewer3DProps> = ({
+  url,
+  filename,
+  thumbnail,
+  onLoaded,
+}) => {
   const [error, setError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const unsupportedFormat = useMemo(() => {
     const lower = filename.toLowerCase();
-    if (lower.endsWith(".step") || lower.endsWith(".stp")) return "STEP";
-    // 3MF is now supported
-    return null;
+    if (lower.endsWith(".stl") || lower.endsWith(".3mf")) return null;
+    return "UNSUPPORTED";
   }, [filename]);
 
   // Reset error when url changes
@@ -199,13 +205,8 @@ const Viewer3D: React.FC<Viewer3DProps> = ({ url, filename, onLoaded }) => {
 
   if (unsupportedFormat) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-vault-800 text-slate-400 p-6 text-center">
-        <FileWarning className="w-12 h-12 mb-3 opacity-50" />
-        <p className="font-medium">Preview not available</p>
-        <p className="text-xs mt-1 opacity-70">
-          {unsupportedFormat} files cannot be previewed in the browser directly.
-          Please download to view.
-        </p>
+      <div className="flex flex-col items-center justify-center h-full bg-vault-800 text-slate-400 text-center">
+        <img className="object-cover h-full" src={thumbnail}></img>
       </div>
     );
   }
@@ -239,7 +240,12 @@ const Viewer3D: React.FC<Viewer3DProps> = ({ url, filename, onLoaded }) => {
           <Stage environment="city" intensity={1} adjustCamera>
             <Center>
               <ErrorBoundary onError={() => setError(true)}>
-                <Model url={url} filename={filename} onLoaded={onLoaded} />
+                <Model
+                  url={url}
+                  filename={filename}
+                  thumbnail={thumbnail}
+                  onLoaded={onLoaded}
+                />
               </ErrorBoundary>
             </Center>
           </Stage>

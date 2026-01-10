@@ -436,7 +436,7 @@ const ModelList: React.FC<ModelListProps> = ({
                       <img
                         src={model.thumbnail}
                         alt={model.name}
-                        className="w-full h-full object-contain p-2 opacity-80 group-hover:opacity-100 transition-opacity"
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                       />
                     ) : (
                       <>
@@ -450,13 +450,13 @@ const ModelList: React.FC<ModelListProps> = ({
                       {model.tags.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="text-[10px] bg-black/60 text-slate-300 px-2 py-0.5 rounded-full backdrop-blur-sm truncate max-w-full"
+                          className="text-sm bg-black/60 text-slate-300 px-2 pb-0.5 rounded-md backdrop-blur-sm truncate max-w-full"
                         >
                           {tag}
                         </span>
                       ))}
                       {model.tags.length > 2 && (
-                        <span className="text-[10px] bg-black/60 text-slate-300 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        <span className="text-xs bg-black/60 text-slate-300 px-2 pt-0.5 rounded-md backdrop-blur-sm">
                           +{model.tags.length - 2}
                         </span>
                       )}
@@ -464,7 +464,7 @@ const ModelList: React.FC<ModelListProps> = ({
 
                     {/* File Type Badge */}
                     <div className="absolute bottom-2 left-2">
-                      <span className="text-[10px] bg-blue-600/80 text-white px-1.5 py-0.5 rounded uppercase font-bold shadow-sm">
+                      <span className="text-sm bg-blue-600/80 text-white px-1.5 py-0.5 rounded uppercase font-medium shadow-sm">
                         {model.name.split(".").pop()}
                       </span>
                     </div>
